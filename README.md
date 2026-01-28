@@ -9,13 +9,22 @@ Esta é a versão de alta performance do buscador de placas, capaz de processar 
 2. Instale as bibliotecas necessárias:
    `pip install -r requirements.txt`
 
-## Como Rodar
+## Como Rodar Online (Link)
+
+Este projeto está preparado para o **Streamlit Cloud**.
+1. Suba o código para o seu GitHub.
+2. Acesse [share.streamlit.io](https://share.streamlit.io).
+3. Conecte seu repositório.
+4. O link será gerado automaticamente (ex: `seu-app.streamlit.app`).
+
+## Como Rodar Localmente (Web)
+
+1. Instale o Streamlit:
+   `pip install streamlit`
+2. Execute o comando:
+   `streamlit run streamlit_app.py`
+
+## Como Rodar Localmente (Desktop)
 
 Basta executar o comando:
 `python main.py`
-
-## Funcionalidades
-- **Carregamento Instantâneo**: Usa Pandas para ler o Excel em alta velocidade.
-- **Busca Global**: Encontra placas em qualquer coluna da planilha.
-- **Interface Moderna**: UI escura e elegante com barra de progresso.
-- **Não Trava**: O processamento roda em segundo plano, mantendo a janela sempre ativa.

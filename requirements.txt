@@ -4,3 +4,4 @@ xlrd
 pyxlsb
 customtkinter
 pillow
+streamlit
