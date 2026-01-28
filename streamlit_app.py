@@ -1,39 +1,91 @@
 import streamlit as st
 import pandas as pd
 import os
-import re
 
-# Tenta carregar o processador com tratamento de erro
+# Tenta carregar o processador
 try:
     from data_processor import DataProcessor
 except Exception as e:
-    st.error(f"❌ Erro ao carregar o motor de dados (data_processor.py): {e}")
-    st.info("Verifique se o arquivo 'data_processor.py' foi enviado para o GitHub corretamente.")
+    st.error(f"❌ Erro ao carregar o motor de dados: {e}")
     st.stop()
 
-# Configuração da página
+# Configuração da página (Tema Claro/Elegante)
 st.set_page_config(
-    page_title="Plate Search Pro • Online", 
+    page_title="Plate Search Pro • Dashboard", 
     page_icon="🔍", 
     layout="wide"
 )
 
-# Estilização Premium
+# Estilização "Elegante e Limpa" (Fundo claro, sombras suaves)
 st.markdown("""
 <style>
-    .stApp { background-color: #0e1117; }
-    .result-card {
-        padding: 1.2rem;
-        border-radius: 8px;
-        background-color: #1e293b;
-        border-left: 5px solid #3b82f6;
-        margin-bottom: 10px;
+    /* Fundo Principal */
+    .stApp {
+        background-color: #f8fafc;
     }
-    .plate-text {
-        font-family: 'Courier New', monospace;
-        font-size: 1.4rem;
-        font-weight: bold;
-        color: #ffffff;
+    
+    /* Sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #ffffff;
+        border-right: 1px solid #e2e8f0;
+    }
+    
+    /* Títulos e Textos */
+    h1, h2, h3 {
+        color: #1e293b;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    /* Cartões de Resultado */
+    .result-card {
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: transform 0.2s;
+    }
+    
+    .result-card:hover {
+        border-color: #3b82f6;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+
+    .plate-badge {
+        font-family: 'Monaco', 'Consolas', monospace;
+        background-color: #eff6ff;
+        color: #2563eb;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-weight: 800;
+        font-size: 1.3rem;
+        border: 1px solid #dbeafe;
+    }
+    
+    .info-text {
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+
+    /* Input de Busca */
+    .stTextInput>div>div>input {
+        border-radius: 10px;
+        border: 1px solid #cbd5e1;
+        padding: 12px;
+        font-size: 1.1rem;
+    }
+    
+    /* Botão na Sidebar */
+    .stButton>button {
+        border-radius: 8px;
+        background-color: #2563eb;
+        color: white;
+        border: None;
+        font-weight: 600;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -44,50 +96,80 @@ def get_processor():
 
 processor = get_processor()
 
-# Interface Principal
-st.title("🔍 Plate Search Pro • Buscador Online")
+# Título e Logo
+st.title("🛡️ Plate Search Pro")
+st.markdown("<p style='color: #64748b; font-size: 1.1rem;'>Sistema de busca de placas de alta performance</p>", unsafe_allow_html=True)
 
+# Sidebar
 with st.sidebar:
-    st.header("Base de Dados")
-    uploaded_file = st.file_uploader("Suba sua planilha (XLSX, XLS, XLSB)", type=["xlsx", "xls", "xlsb"])
+    st.image("https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=200", width=200)
+    st.header("Gerenciar Base")
+    uploaded_file = st.file_uploader("Suba sua planilha de dados", type=["xlsx", "xls", "xlsb"])
     
     if uploaded_file:
-        # Salva o arquivo temporariamente para processamento
         temp_name = f"temp_{uploaded_file.name}"
         with open(temp_name, "wb") as f:
             f.write(uploaded_file.getbuffer())
         
         try:
-            with st.spinner("Indexando milhares de linhas..."):
+            with st.spinner("Indexando dados..."):
                 count = processor.load_excel(temp_name)
-                st.success(f"✅ {count} registros indexados!")
+                st.success(f"✅ {count} registros encontrados!")
                 st.session_state['data_ready'] = True
         except Exception as e:
-            st.error(f"Falha ao processar: {e}")
+            st.error(f"Erro: {e}")
         finally:
             if os.path.exists(temp_name):
                 os.remove(temp_name)
 
+# Área de Busca
 if st.session_state.get('data_ready'):
-    q = st.text_input("Digite a placa para buscar:", placeholder="Ex: ABC1234")
+    # Campo de busca otimizado
+    q = st.text_input("Localizar Placa", placeholder="Digite para filtrar...", label_visibility="collapsed")
     
-    if q:
-        results = processor.search(q)
-        if not results.empty:
-            st.write(f"Exibindo {min(len(results), 50)} de {len(results)} resultados:")
-            for _, row in results.head(50).iterrows():
-                with st.container():
-                    st.markdown(f"""
-                        <div class="result-card">
-                            <span class="plate-text">{row['plate_raw']}</span> | 
-                            <span style="color:#94a3b8">Aba: {row['sheet_name']} (Linha {row['row_index']})</span>
+    # Streamlit executa o rerender automaticamente. 
+    # Para o usuário não precisar dar Enter, ele só precisa parar de digitar por meio segundo
+    # ou clicar fora, mas em apps modernos de Streamlit isso já é bem fluido.
+    
+    results = processor.search(q)
+    
+    if not results.empty:
+        st.markdown(f"<p class='info-text'>Mostrando {min(len(results), 50)} resultados de {len(results)}</p>", unsafe_allow_html=True)
+        
+        for _, row in results.head(50).iterrows():
+            with st.container():
+                # HTML Customizado para o card elegante
+                st.markdown(f"""
+                    <div class="result-card">
+                        <div>
+                            <span class="plate-badge">{row['plate_raw']}</span>
+                            <span style="margin-left: 15px; color: #1e293b; font-weight: 500;">{row['sheet_name']}</span>
                         </div>
-                    """, unsafe_allow_html=True)
-                    with st.expander("Ver detalhes"):
-                        st.dataframe(pd.DataFrame([row]).drop(['plate_norm', 'plate_raw', 'sheet_name', 'row_index'], axis=1).dropna(axis=1))
-        else:
-            st.warning("Nenhum resultado encontrado.")
-    else:
-        st.info("Digite algo acima para começar a busca.")
+                        <div class="info-text">
+                            Linha {row['row_index']}
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
+                
+                with st.expander("Ver ficha completa"):
+                    # Exibição limpa dos dados extras
+                    data_cols = [c for c in row.index if c not in ['plate_norm', 'plate_raw', 'sheet_name', 'row_index']]
+                    for i in range(0, len(data_cols), 3):
+                        cols = st.columns(3)
+                        for j in range(3):
+                            if i + j < len(data_cols):
+                                col_name = data_cols[i+j]
+                                val = row[col_name]
+                                if pd.notna(val):
+                                    cols[j].metric(label=str(col_name), value=str(val))
+
+    elif q:
+        st.warning(f"Nenhum registro encontrado para '{q}'.")
 else:
-    st.info("👋 Bem-vindo! Comece carregando uma planilha pelo menu lateral.")
+    # Tela de Boas Vindas
+    st.markdown("""
+        <div style="background-color: #ffffff; padding: 40px; border-radius: 20px; border: 1px solid #e2e8f0; text-align: center; margin-top: 50px;">
+            <h2 style="color: #2563eb;">Aguardando Arquivo</h2>
+            <p style="color: #64748b;">Por favor, carregue sua planilha Excel no menu lateral para começar as buscas.</p>
+        </div>
+    """, unsafe_allow_html=True)
