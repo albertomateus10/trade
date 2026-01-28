@@ -1,7 +1,18 @@
 import streamlit as st
-import pandas as pd
-from data_processor import DataProcessor
 import os
+import sys
+
+# Tenta importar o processador e exibir erro amigável se falhar
+try:
+    import pandas as pd
+    from data_processor import DataProcessor
+except ImportError as e:
+    st.error(f"❌ Erro de Dependência: {e}")
+    st.info("Certifique-se de que o arquivo 'data_processor.py' está na mesma pasta no GitHub e que o 'requirements.txt' está correto.")
+    st.stop()
+except Exception as e:
+    st.error(f"❌ Erro na inicialização: {e}")
+    st.stop()
 
 # Configuração da página
 st.set_page_config(
