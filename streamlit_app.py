@@ -45,7 +45,7 @@ def get_processor():
 processor = get_processor()
 
 # Interface Principal
-st.title("🔍 Plate Search Pro • Buscador Online")
+st.title("🔍 Verificador de Trade In")
 
 with st.sidebar:
     st.header("Base de Dados")
